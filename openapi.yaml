@@ -1,0 +1,818 @@
+openapi: 3.0.3
+info:
+  title: Vrij Lezen op Maat API
+  version: 1.1.0
+  description: |
+    API voor het leesadviessysteem. Leerlingen vullen een leesprofiel in en krijgen
+    advies, docenten volgen hun gekoppelde leerlingen.
+
+    **Authenticatie:** na `POST /login` ontvang je een JWT. Stuur die mee als
+    `Authorization: Bearer <token>`. Het token is 2 uur geldig en bevat id, naam en rol.
+    De gebruiker wordt altijd uit het token gehaald, nooit uit de URL of body, zodat een
+    gebruiker alleen bij de eigen gegevens kan. Uitzondering: docenten geven bij
+    `/docent/...` een leerling-id op, maar de API controleert dan of die leerling aan
+    de ingelogde docent is gekoppeld.
+
+    **Foutantwoorden:** fouten hebben altijd een `error`-tekst. Sommige antwoorden
+    bevatten daarnaast een `status`-veld met dezelfde code als de HTTP-status.
+
+servers:
+  - url: http://localhost:8080
+    description: Lokale ontwikkelomgeving
+
+tags:
+  - name: Auth
+    description: Registreren en inloggen
+  - name: Leesprofiel
+    description: Eigen profiel van de ingelogde gebruiker
+  - name: Advies
+    description: Eigen leesadvies
+  - name: Leeslijst
+    description: Eigen leeslijst
+  - name: Koppeling
+    description: Leerling kiest een docent (alleen leerlingen)
+  - name: Docent
+    description: Alleen docenten, en alleen voor eigen gekoppelde leerlingen
+  - name: Catalogus
+    description: Openbaar
+
+paths:
+  /register:
+    post:
+      tags: [Auth]
+      summary: Account aanmaken
+      description: |
+        De rol volgt uit de code. Een code die met `DOC-` begint geeft een docent,
+        een code die met `STU-` begint een leerling.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "201":
+          description: Account aangemaakt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RegisterResponse"
+        "400":
+          description: Ontbrekende velden ("Alle velden zijn verplicht.") of ongeldige code ("Ongeldige code.")
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "500":
+          description: Opslaan mislukt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /login:
+    post:
+      tags: [Auth]
+      summary: Inloggen en JWT ophalen
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: Ingelogd
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/LoginResponse"
+        "400":
+          description: Naam of wachtwoord ontbreekt, of verkeerd wachtwoord van een docent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          description: Verkeerd wachtwoord van een leerling
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "404":
+          description: Gebruiker niet gevonden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /me:
+    get:
+      tags: [Auth]
+      summary: Wie ben ik? (token controleren)
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: De ingelogde gebruiker
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [user]
+                properties:
+                  user:
+                    $ref: "#/components/schemas/User"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /leesprofiel:
+    get:
+      tags: [Leesprofiel]
+      summary: Eigen leesprofiel ophalen
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Het leesprofiel
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Leesprofiel"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Nog geen leesprofiel ingevuld ("geen profiel gevonden")
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+    post:
+      tags: [Leesprofiel]
+      summary: Leesprofiel opslaan
+      description: |
+        Controleert dat genre, niveau, lengte en leesdoel zijn ingevuld.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeesprofielInput"
+      responses:
+        "200":
+          description: Opgeslagen
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        "400":
+          description: Genre vergeten ("genre vergeten") of niet alle velden ingevuld
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    put:
+      tags: [Leesprofiel]
+      summary: Leesprofiel bewerken
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeesprofielInput"
+      responses:
+        "200":
+          description: Het bijgewerkte profiel. Is er nog geen profiel, dan is het antwoord leeg.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Leesprofiel"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /advies:
+    get:
+      tags: [Advies]
+      summary: Leesadvies genereren
+      description: |
+        Maakt op basis van het leesprofiel een advies van maximaal drie boeken.
+        Een eerder advies van deze leerling wordt vervangen. Boeken die op thema matchen
+        komen eerst, daarna volgen boeken die alleen op niveau passen.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Het advies
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [advies]
+                properties:
+                  advies:
+                    type: array
+                    maxItems: 3
+                    items:
+                      $ref: "#/components/schemas/AdviesItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          description: Geen leesprofiel gevonden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /leeslijst:
+    get:
+      tags: [Leeslijst]
+      summary: Eigen leeslijst ophalen
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: De leeslijst
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [books]
+                properties:
+                  books:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/LeeslijstItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    post:
+      tags: [Leeslijst]
+      summary: Boek aan de eigen leeslijst toevoegen
+      description: |
+        Alleen het veld `_id` van het boek wordt gebruikt. Je mag het hele boek uit de
+        catalogus meesturen.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LeeslijstAddRequest"
+      responses:
+        "201":
+          description: Boek toegevoegd
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        "400":
+          description: Het boek heeft geen `_id`
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: Boek staat al in de leeslijst
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /leeslijst/{id}:
+    parameters:
+      - $ref: "#/components/parameters/LeeslijstId"
+    patch:
+      tags: [Leeslijst]
+      summary: Boek als gelezen of ongelezen markeren
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [gelezen]
+              properties:
+                gelezen:
+                  type: boolean
+      responses:
+        "200":
+          description: Bijgewerkt
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    delete:
+      tags: [Leeslijst]
+      summary: Boek uit de leeslijst verwijderen
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Verwijderd
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /docenten:
+    get:
+      tags: [Koppeling]
+      summary: Alle docenten om uit te kiezen (alleen leerlingen)
+      description: Geeft alleen id en naam. Wachtwoord en registratiecode worden nooit teruggegeven.
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Lijst met docenten, op naam gesorteerd
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [docenten]
+                properties:
+                  docenten:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/Teacher"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /student/docent:
+    get:
+      tags: [Koppeling]
+      summary: Docent van de ingelogde leerling
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: De gekoppelde docent, of null
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [docent]
+                properties:
+                  docent:
+                    allOf:
+                      - $ref: "#/components/schemas/Teacher"
+                    nullable: true
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+    put:
+      tags: [Koppeling]
+      summary: Docent kiezen of wijzigen
+      description: Vervangt een eerdere koppeling in één transactie. Een leerling heeft één docent.
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [teacherId]
+              properties:
+                teacherId:
+                  type: integer
+                  example: 13
+      responses:
+        "200":
+          description: Gekoppeld
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [success, teacher]
+                properties:
+                  success:
+                    type: boolean
+                    example: true
+                  teacher:
+                    $ref: "#/components/schemas/Teacher"
+        "400":
+          description: Ongeldige docent
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+        "404":
+          description: Docent niet gevonden
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /docent/students:
+    get:
+      tags: [Docent]
+      summary: Leerlingen van de ingelogde docent
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Gekoppelde leerlingen
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [students]
+                properties:
+                  students:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/StudentSummary"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          $ref: "#/components/responses/Forbidden"
+
+  /docent/leeslijst/{studentId}:
+    parameters:
+      - $ref: "#/components/parameters/StudentId"
+    get:
+      tags: [Docent]
+      summary: Leeslijst van een gekoppelde leerling
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: De leeslijst van de leerling
+          content:
+            application/json:
+              schema:
+                type: object
+                required: [books]
+                properties:
+                  books:
+                    type: array
+                    items:
+                      $ref: "#/components/schemas/LeeslijstItem"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Geen docent, of de leerling is niet aan deze docent gekoppeld
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /docent/leeslijst/{studentId}/add:
+    parameters:
+      - $ref: "#/components/parameters/StudentId"
+    post:
+      tags: [Docent]
+      summary: Boek toevoegen aan de leeslijst van een gekoppelde leerling
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [bookId]
+              properties:
+                bookId:
+                  type: string
+                  description: Het id (`_id`) van het boek in de catalogus
+      responses:
+        "200":
+          description: Boek toegevoegd
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Success"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "403":
+          description: Geen docent, of de leerling is niet aan deze docent gekoppeld
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+        "409":
+          description: Boek staat al in de leeslijst ("Boek staat al in leeslijst")
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /catalog:
+    get:
+      tags: [Catalogus]
+      summary: Catalogus doorzoeken (met paginering)
+      parameters:
+        - name: page
+          in: query
+          schema:
+            type: integer
+            minimum: 1
+            default: 1
+        - name: niveau
+          in: query
+          schema:
+            type: string
+          example: F2
+        - name: type
+          in: query
+          schema:
+            type: string
+          example: Boek
+        - name: thema
+          in: query
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Een pagina met maximaal 6 boeken
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CatalogPage"
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  parameters:
+    LeeslijstId:
+      name: id
+      in: path
+      required: true
+      description: Id van het leeslijst-item
+      schema:
+        type: integer
+    StudentId:
+      name: studentId
+      in: path
+      required: true
+      description: Id van de leerling
+      schema:
+        type: string
+
+  responses:
+    Unauthorized:
+      description: Token ontbreekt, is ongeldig of verlopen
+    Forbidden:
+      description: Deze rol heeft geen toegang tot deze route
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    Error:
+      type: object
+      required: [error]
+      properties:
+        error:
+          type: string
+          example: Naam of wachtwoord klopt niet.
+        status:
+          type: integer
+          description: Komt bij sommige antwoorden mee en is gelijk aan de HTTP-status
+
+    Success:
+      type: object
+      required: [success]
+      properties:
+        success:
+          type: boolean
+          example: true
+
+    Role:
+      type: string
+      enum: [teacher, student]
+
+    User:
+      type: object
+      required: [id, name, role]
+      properties:
+        id:
+          type: integer
+          example: 3
+        name:
+          type: string
+          example: BasStudent2
+        role:
+          $ref: "#/components/schemas/Role"
+
+    RegisterRequest:
+      type: object
+      required: [name, password, code]
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+          format: password
+        code:
+          type: string
+          description: Begint met DOC- voor een docent of STU- voor een leerling
+          example: STU-123
+
+    RegisterResponse:
+      type: object
+      required: [success, role]
+      properties:
+        success:
+          type: boolean
+          example: true
+        role:
+          $ref: "#/components/schemas/Role"
+
+    LoginRequest:
+      type: object
+      required: [name, password]
+      properties:
+        name:
+          type: string
+        password:
+          type: string
+          format: password
+
+    LoginResponse:
+      type: object
+      required: [token, role, id, name]
+      properties:
+        token:
+          type: string
+          description: JWT, 2 uur geldig
+        role:
+          $ref: "#/components/schemas/Role"
+        id:
+          type: integer
+        name:
+          type: string
+
+    Teacher:
+      type: object
+      required: [id, name]
+      properties:
+        id:
+          type: integer
+          example: 13
+        name:
+          type: string
+          example: BasD
+
+    StudentSummary:
+      type: object
+      description: Velden zijn null als de koppeling naar een verwijderde leerling wijst
+      properties:
+        id:
+          type: integer
+          nullable: true
+        name:
+          type: string
+          nullable: true
+        code:
+          type: string
+          nullable: true
+
+    Book:
+      type: object
+      description: Een boek zoals de API het teruggeeft in advies en leeslijst
+      properties:
+        Titel:
+          type: string
+        Auteur:
+          type: string
+        type:
+          type: string
+        niveau:
+          type: string
+        thema:
+          type: string
+          description: Thema's gescheiden door puntkomma's
+        beschrijving:
+          type: string
+
+    CatalogBook:
+      allOf:
+        - $ref: "#/components/schemas/Book"
+        - type: object
+          required: [_id]
+          properties:
+            _id:
+              type: string
+              description: Id van het boek in de catalogus
+
+    CatalogPage:
+      type: object
+      required: [page, limit, total, books]
+      properties:
+        page:
+          type: integer
+        limit:
+          type: integer
+          example: 6
+        total:
+          type: integer
+        books:
+          type: array
+          items:
+            $ref: "#/components/schemas/CatalogBook"
+
+    LeesprofielInput:
+      type: object
+      required: [genre, onderwerp, niveau, lengte, leesdoel]
+      properties:
+        genre:
+          type: array
+          minItems: 1
+          items:
+            type: string
+          example: [historisch, avontuur]
+        onderwerp:
+          type: array
+          items:
+            type: string
+          example: [WOII, detective]
+        niveau:
+          type: string
+          enum: [F2, F2-F3, F3, F3+]
+        lengte:
+          type: string
+          enum: [kort, gemiddeld, lang]
+        leesdoel:
+          type: string
+
+    Leesprofiel:
+      allOf:
+        - $ref: "#/components/schemas/LeesprofielInput"
+        - type: object
+          required: [id, studentId]
+          properties:
+            id:
+              type: integer
+              readOnly: true
+            studentId:
+              type: string
+              readOnly: true
+
+    AdviesItem:
+      type: object
+      required: [bookId, book, reason]
+      properties:
+        bookId:
+          type: string
+        book:
+          allOf:
+            - $ref: "#/components/schemas/Book"
+          nullable: true
+        reason:
+          type: string
+          description: Waarom dit boek bij het profiel past
+
+    LeeslijstAddRequest:
+      type: object
+      required: [_id]
+      properties:
+        _id:
+          type: string
+          description: Id van het boek in de catalogus
+      additionalProperties: true
+
+    LeeslijstItem:
+      type: object
+      required: [id, studentId, bookId]
+      properties:
+        id:
+          type: integer
+        studentId:
+          type: string
+        bookId:
+          type: string
+        gelezen:
+          type: boolean
+          nullable: true
+        book:
+          allOf:
+            - $ref: "#/components/schemas/Book"
+          nullable: true
