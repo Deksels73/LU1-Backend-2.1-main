@@ -1,8 +1,9 @@
 import { leeslijst } from "./schema.js";
 import { eq, and } from "drizzle-orm";
 import { drizzle } from 'drizzle-orm/node-postgres';
+import { config } from "../config.js";
 
-const db = drizzle(process.env.DATABASE_URL!);
+const db = drizzle(config.databaseUrl);
 
 
 export const LeeslijstRepository = {

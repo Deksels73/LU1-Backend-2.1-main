@@ -1,34 +1,3 @@
-// import type { FastifyInstance } from "fastify";
-// import { DocentService } from "../service/docent.service.js";
-
-// export default async function docentRoutes(server: FastifyInstance) {
-
-//   server.get("/docent/students/:teacherId", async (req, reply) => {
-//     const { teacherId } = req.params as any;
-//     const students = await DocentService.getStudents(Number(teacherId));
-//     return reply.send({ students });
-//   });
-
-//   server.get("/docent/leeslijst/:studentId", async (req, reply) => {
-//     const { studentId } = req.params as any;
-//     const books = await DocentService.getLeeslijst(studentId);
-//     return reply.send({ books });
-//   });
-
-//   server.post("/docent/leeslijst/:studentId/add", async (req, reply) => {
-//   const { studentId } = req.params as any;
-//   const { bookId } = req.body as any;
-
-//   const result = await DocentService.addBook(studentId, bookId);
-
-//   if ("error" in result) {
-//     return reply.code(result.status).send(result);
-//   }
-
-//   return reply.send(result);
-// });
-
-// }
 import type { FastifyInstance } from "fastify";
 import { DocentService } from "../service/docent.service.js";
 import { authenticate, onlyTeacher } from "../auth/guards.js";

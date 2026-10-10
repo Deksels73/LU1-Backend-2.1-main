@@ -16,3 +16,8 @@ export const onlyStudent = async (request: FastifyRequest, reply: FastifyReply) 
     return reply.code(403).send({ error: "Geen toegang." });
   }
 };
+
+export function currentUser(request: FastifyRequest) {
+  if (!request.user) throw new Error("Geen ingelogde gebruiker");
+  return request.user;
+}

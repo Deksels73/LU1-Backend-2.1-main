@@ -6,10 +6,6 @@ export declare const LeeslijstService: {
         status: number;
     }>;
     get(studentId: string): Promise<{
-        id: number;
-        studentId: string;
-        bookId: string;
-        gelezen: boolean | null;
         book: {
             Titel: any;
             Auteur: any;
@@ -18,6 +14,10 @@ export declare const LeeslijstService: {
             thema: any;
             beschrijving: any;
         } | null;
+        id: number;
+        studentId: string;
+        bookId: string;
+        gelezen: boolean | null;
     }[]>;
     update(studentId: string, id: string, gelezen: boolean): Promise<{
         success: boolean;

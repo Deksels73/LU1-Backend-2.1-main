@@ -1,12 +1,12 @@
 export declare const LeesprofielService: {
     save(studentId: string, body: any): Promise<{
-        success?: never;
         error: string;
         status: number;
+        success?: never;
     } | {
+        success: boolean;
         error?: never;
         status?: never;
-        success: boolean;
     }>;
     get(studentId: string): Promise<{
         id: number;

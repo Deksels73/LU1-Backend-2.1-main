@@ -1,1 +1,1 @@
-{"version":3,"file":"boek.repository.d.ts","sourceRoot":"","sources":["boek.repository.ts"],"names":[],"mappings":"AAMA,eAAO,MAAM,cAAc;IACnB,OAAO,SAAS,MAAM;;;;;;;;IAiBtB,WAAW,UAAU,GAAG;CAI/B,CAAC"}
+{"version":3,"file":"boek.repository.d.ts","sourceRoot":"","sources":["boek.repository.ts"],"names":[],"mappings":"AAMA,eAAO,MAAM,cAAc;oBACH,MAAM;;;;;;;;yBAiBD,GAAG;CAI/B,CAAC"}

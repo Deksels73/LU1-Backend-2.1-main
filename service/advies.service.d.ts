@@ -4,8 +4,6 @@ export declare const AdviesService: {
         status: number;
         advies?: never;
     } | {
-        error?: never;
-        status?: never;
         advies: {
             bookId: string;
             book: {
@@ -18,6 +16,8 @@ export declare const AdviesService: {
             } | null;
             reason: string;
         }[];
+        error?: never;
+        status?: never;
     }>;
 };
 //# sourceMappingURL=advies.service.d.ts.map

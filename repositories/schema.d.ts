@@ -33,7 +33,7 @@ export declare const teacherStudent: import("drizzle-orm/pg-core").PgTableWithCo
             generated: undefined;
         }>;
     };
-    dialect: 'pg';
+    dialect: "pg";
 }>;
 export declare const teachers: import("drizzle-orm/pg-core").PgTableWithColumns<{
     name: "teachers";
@@ -100,7 +100,7 @@ export declare const teachers: import("drizzle-orm/pg-core").PgTableWithColumns<
             generated: undefined;
         }>;
     };
-    dialect: 'pg';
+    dialect: "pg";
 }>;
 export declare const students: import("drizzle-orm/pg-core").PgTableWithColumns<{
     name: "students";
@@ -167,7 +167,7 @@ export declare const students: import("drizzle-orm/pg-core").PgTableWithColumns<
             generated: undefined;
         }>;
     };
-    dialect: 'pg';
+    dialect: "pg";
 }>;
 export declare const leesprofiel: import("drizzle-orm/pg-core").PgTableWithColumns<{
     name: "reading_profile";
@@ -279,7 +279,7 @@ export declare const leesprofiel: import("drizzle-orm/pg-core").PgTableWithColum
             generated: undefined;
         }>;
     };
-    dialect: 'pg';
+    dialect: "pg";
 }>;
 export declare const leeslijst: import("drizzle-orm/pg-core").PgTableWithColumns<{
     name: "leeslijst";
@@ -346,7 +346,7 @@ export declare const leeslijst: import("drizzle-orm/pg-core").PgTableWithColumns
             generated: undefined;
         }>;
     };
-    dialect: 'pg';
+    dialect: "pg";
 }>;
 export declare const leesadvies: import("drizzle-orm/pg-core").PgTableWithColumns<{
     name: "reading_advice";
@@ -413,6 +413,6 @@ export declare const leesadvies: import("drizzle-orm/pg-core").PgTableWithColumn
             generated: undefined;
         }>;
     };
-    dialect: 'pg';
+    dialect: "pg";
 }>;
 //# sourceMappingURL=schema.d.ts.map

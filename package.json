@@ -5,11 +5,13 @@
   "main": "index.js",
   "scripts": {
     "build": "tsc -p tsconfig.json",
-    "start": "node index.js",
+    "start": "npm test && node index.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "db:generate": "drizzle-kit generate",
-    "db:migrate": "drizzle-kit migrate"
+    "db:migrate": "drizzle-kit migrate",
+    "lint": "eslint .",
+  "lint:fix": "eslint . --fix"
   },
   "keywords": [],
   "author": "",
@@ -32,13 +34,17 @@
     "pg": "^8.23.0"
   },
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@types/mongodb": "^4.0.6",
     "@types/node": "^26.6.4",
     "@types/passport-jwt": "^4.0.1",
     "@types/pg": "^8.23.1",
     "drizzle-kit": "^1.0.0-rc.4",
+    "eslint": "^10.12.0",
+    "globals": "^17.13.0",
     "tsx": "^4.23.15",
-    "typescript": "^7.0.2",
+    "typescript": "~6.0",
+    "typescript-eslint": "^8.71.1",
     "vitest": "^5.0.3"
   }
 }

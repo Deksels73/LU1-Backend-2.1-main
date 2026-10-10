@@ -1,8 +1,9 @@
 import { leesprofiel } from "./schema.js";
 import { eq } from "drizzle-orm";
 import { drizzle } from 'drizzle-orm/node-postgres';
+import { config } from "../config.js";
 
-const db = drizzle(process.env.DATABASE_URL!);
+const db = drizzle(config.databaseUrl);
 
 export const LeesprofielRepository = {
   async save(studentId: string, data: {

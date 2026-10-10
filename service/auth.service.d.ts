@@ -5,25 +5,25 @@ export declare const AuthService: {
         success?: never;
         role?: never;
     } | {
-        error?: never;
-        status?: never;
         success: boolean;
         role: string;
+        error?: never;
+        status?: never;
     }>;
     login(name: string, password: string): Promise<{
-        success?: never;
-        role?: never;
         error: string;
         status: number;
+        success?: never;
+        role?: never;
         id?: never;
         name?: never;
     } | {
-        error?: never;
-        status?: never;
         success: boolean;
         role: string;
         id: number;
         name: string;
+        error?: never;
+        status?: never;
     }>;
 };
 //# sourceMappingURL=auth.service.d.ts.map

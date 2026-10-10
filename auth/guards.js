@@ -12,4 +12,9 @@ export const onlyStudent = async (request, reply) => {
         return reply.code(403).send({ error: "Geen toegang." });
     }
 };
+export function currentUser(request) {
+    if (!request.user)
+        throw new Error("Geen ingelogde gebruiker");
+    return request.user;
+}
 //# sourceMappingURL=guards.js.map

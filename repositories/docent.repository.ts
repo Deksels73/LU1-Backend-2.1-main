@@ -1,8 +1,9 @@
 import { teacherStudent, students, leeslijst } from "./schema.js";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { eq, and } from "drizzle-orm";
+import { config } from "../config.js";
 
-const db = drizzle(process.env.DATABASE_URL!);
+const db = drizzle(config.databaseUrl);
 
 export const DocentRepository = {
 

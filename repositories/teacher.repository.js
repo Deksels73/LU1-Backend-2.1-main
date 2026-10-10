@@ -1,27 +1,9 @@
-// import 'dotenv/config';
-// import { drizzle } from 'drizzle-orm/node-postgres';
-// const db = drizzle(process.env.DATABASE_URL!);
-// import { teachers } from "../repositories/schema.js";
-// import { eq } from "drizzle-orm";
-// export const TeacherRepository = {
-//   async findByName(name: string) {
-//     return db.select()
-//       .from(teachers)
-//       .where(eq(teachers.name, name));
-//   },
-//   async create(name: string, hashedPassword: string, code: string) {
-//     return db.insert(teachers).values({
-//       name,
-//       password: hashedPassword,
-//       code
-//     });
-//   }
-// }
 import "dotenv/config";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { eq } from "drizzle-orm";
 import { teachers } from "./schema.js";
-const db = drizzle(process.env.DATABASE_URL);
+import { config } from "../config.js";
+const db = drizzle(config.databaseUrl);
 export const TeacherRepository = {
     async findByName(name) {
         return db.select().from(teachers).where(eq(teachers.name, name));
