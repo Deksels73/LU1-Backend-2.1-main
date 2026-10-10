@@ -1,4 +1,3 @@
-// services/auth.service.ts
 import bcrypt from "bcryptjs";
 import { TeacherRepository } from "../repositories/teacher.repository.js";
 import { StudentRepository } from "../repositories/student.repository.js";

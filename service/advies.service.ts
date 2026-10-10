@@ -10,13 +10,92 @@ function matchNiveau(niveau: string) {
 }
 
 const themaMapping: Record<string, string[]> = {
-  historisch: ["oorlog", "verlies", "onderduik", "familie", "herinneringen", "biografie"],
-  avontuur: ["doorzetten", "veerkracht", "reizen", "cultuur", "ontwikkeling"],
-  WOII: ["oorlog", "onderduik", "verlies", "familie", "moraal"],
-  detective: ["mysterie", "thriller", "onderzoek", "criminaliteit", "geheimen"],
-  welzijn: ["geluk", "zingeving", "zelfreflectie", "inzicht", "hoop"],
-  vriendschap: ["vriendschap", "verbondenheid", "ontwikkeling", "opgroeien", "veerkracht"]
+  historisch: [
+    "oorlog", "verlies", "onderduik", "familie", "herinneringen",
+    "biografie", "moraal", "cultuur", "recht", "burgerschap"
+  ],
+
+  avontuur: [
+    "doorzetten", "veerkracht", "reizen", "cultuur", "ontwikkeling",
+    "onderzoek", "mysterie", "spannning", "ervaringen"
+  ],
+
+  WOII: [
+    "oorlog", "onderduik", "verlies", "familie", "moraal",
+    "schuld", "herinneringen", "biografie"
+  ],
+
+  detective: [
+    "mysterie", "thriller", "onderzoek", "criminaliteit", "geheimen",
+    "bedrog", "spannning", "jongeren"
+  ],
+
+  welzijn: [
+    "geluk", "zingeving", "zelfreflectie", "inzicht", "hoop",
+    "verlies", "rouw", "zorg", "welzijn"
+  ],
+
+  vriendschap: [
+    "vriendschap", "verbondenheid", "ontwikkeling", "opgroeien",
+    "veerkracht", "ervaringen", "groei", "relaties"
+  ],
+
+  liefde: [
+    "liefde", "verlies", "familie", "relaties", "groei",
+    "ziekte", "hoop", "verbondenheid"
+  ],
+
+  spanning: [
+    "spannning", "thriller", "mysterie", "geheimen",
+    "bedrog", "onderzoek", "criminaliteit"
+  ],
+
+  migratie: [
+    "migratie", "verlies", "cultuur", "herinneringen",
+    "doorzetten", "veerkracht", "familie"
+  ],
+
+  filosofie: [
+    "zingeving", "inzicht", "zelfreflectie", "moraal",
+    "burgerschap", "samenleven"
+  ],
+
+  humor: [
+    "humor", "ervaringen", "familie", "eten",
+    "herinneringen", "groei"
+  ],
+
+  sport: [
+    "sport", "doorzetten", "veerkracht", "groei",
+    "vriendschap", "ontwikkeling"
+  ],
+
+  mysterie: [
+    "mysterie", "onderzoek", "geheimen", "bedrog",
+    "spannning", "thriller"
+  ],
+
+  familie: [
+    "familie", "zorg", "herinneringen", "verlies",
+    "groei", "relaties", "verbondenheid"
+  ],
+
+  identiteit: [
+    "identiteit", "zelfreflectie", "ontwikkeling",
+    "groei", "gender", "samenleven"
+  ],
+
+  macht: [
+    "macht", "gender", "groepsdruk", "samenleven",
+    "moraal", "criminaliteit"
+  ],
+
+  jongeren: [
+    "jongeren", "opgroeien", "groepsdruk", "vriendschap",
+    "ontwikkeling", "ervaringen"
+  ]
 };
+
 
 export const AdviesService = {
   async genereerAdvies(studentId: string) {

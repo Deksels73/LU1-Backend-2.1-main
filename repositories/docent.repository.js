@@ -1,7 +1,8 @@
 import { teacherStudent, students, leeslijst } from "./schema.js";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { eq, and } from "drizzle-orm";
-const db = drizzle(process.env.DATABASE_URL);
+import { config } from "../config.js";
+const db = drizzle(config.databaseUrl);
 export const DocentRepository = {
     async getStudents(teacherId) {
         return await db

@@ -1,5 +1,3 @@
-// import type { FastifyInstance } from "fastify";
-// import { DocentService } from "../service/docent.service.js";
 import { DocentService } from "../service/docent.service.js";
 import { authenticate, onlyTeacher } from "../auth/guards.js";
 const teacherOnly = [authenticate, onlyTeacher];

@@ -13,7 +13,7 @@ export default async function leesprofielRoutes(server: FastifyInstance) {
       return reply.code(result.status ?? 500).send({ error: result.error });
     }
 
-    return reply.send(result);
+    return reply.code(201).send(result);
   });
 
   // PROFIEL OPHALEN

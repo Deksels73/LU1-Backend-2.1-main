@@ -1,5 +1,3 @@
-// import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-// import { AdviesService } from "../service/advies.service.js";
 import { AdviesService } from "../service/advies.service.js";
 import { authenticate } from "../auth/guards.js";
 export default async function adviesRoutes(server) {

@@ -1,6 +1,3 @@
-// // routes/auth.routes.ts
-// import type { FastifyInstance } from "fastify";
-// import { AuthService } from "../service/auth.service.js";
 import { AuthService } from "../service/auth.service.js";
 import { authenticate } from "../auth/guards.js";
 export default async function authRoutes(server) {

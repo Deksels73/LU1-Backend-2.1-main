@@ -1,5 +1,3 @@
-// import type { FastifyInstance } from "fastify";
-// import { LeesprofielService } from "../service/leesprofiel.service.js";
 import { LeesprofielService } from "../service/leesprofiel.service.js";
 import { authenticate } from "../auth/guards.js";
 export default async function leesprofielRoutes(server) {
@@ -11,7 +9,7 @@ export default async function leesprofielRoutes(server) {
         if (result.error) {
             return reply.code(result.status ?? 500).send({ error: result.error });
         }
-        return reply.send(result);
+        return reply.code(201).send(result);
     });
     // PROFIEL OPHALEN
     server.get("/leesprofiel", { preValidation: authenticate }, async (req, reply) => {

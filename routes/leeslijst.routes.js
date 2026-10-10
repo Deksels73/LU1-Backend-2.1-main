@@ -1,5 +1,3 @@
-// import type { FastifyInstance, FastifyRequest, FastifyReply } from "fastify";
-// import { LeeslijstService } from "../service/leeslijst.service.js";
 import { LeeslijstService } from "../service/leeslijst.service.js";
 import { authenticate } from "../auth/guards.js";
 export default async function leeslijstRoutes(server) {
