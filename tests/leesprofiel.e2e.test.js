@@ -1,9 +1,8 @@
 import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import request from "supertest";
 import { buildApp } from "./app.js";
-import { authenticate } from "../auth/guards.js";
 vi.mock("../auth/guards.js", () => ({
-    authenticate: async (req, reply) => {
+    authenticate: async (req) => {
         req.user = { id: 3, name: "student", role: "student" };
     }
 }));

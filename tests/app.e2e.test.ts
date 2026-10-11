@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
+import { describe, it, beforeEach, afterEach, expect } from "vitest";
 import request from "supertest";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "./app.js";

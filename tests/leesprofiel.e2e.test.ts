@@ -2,10 +2,9 @@ import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
 import request from "supertest";
 import type { FastifyInstance } from "fastify";
 import { buildApp } from "./app.js";
-import { authenticate } from "../auth/guards.js";
 
 vi.mock("../auth/guards.js", () => ({
-authenticate: async (req: any, reply: any) => {
+authenticate: async (req: any) => {
     req.user = { id: 3, name: "student", role: "student" };
   }
 }));

@@ -1,4 +1,4 @@
-import { describe, it, beforeEach, afterEach, expect, vi } from "vitest";
+import { describe, it, beforeEach, afterEach, expect } from "vitest";
 import request from "supertest";
 import { buildApp } from "./app.js";
 describe("Fastify App (e2e)", () => {
